@@ -6,14 +6,18 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 
 	"gopkg.in/yaml.v3"
 )
 
-type GApiConfig struct {
-	Listen  string   `json:"listen"`
-	Output  []string `json:"output"`
-	Project string   `json:"project"`
+type GApiRootConfig struct {
+	Listen  string `json:"listen"`
+	Project string `json:"project"`
+}
+
+type gApiConfigHeader struct {
+	Version string `json:"version"`
 }
 
 type IBuilder interface {
@@ -23,7 +27,7 @@ type IBuilder interface {
 	BuildClientAction() (string, error)
 }
 
-func LoadConfig() (GApiConfig, string, error) {
+func LoadRootConfig() (GApiRootConfig, string, error) {
 	configPath := ""
 	configContent := ""
 
@@ -54,13 +58,13 @@ func LoadConfig() (GApiConfig, string, error) {
 
 	if !filepath.IsAbs(configPath) {
 		if absPath, err := filepath.Abs(configPath); err != nil {
-			return GApiConfig{}, "", fmt.Errorf("failed to convert config path to absolute path: %v", err)
+			return GApiRootConfig{}, "", fmt.Errorf("failed to convert config path to absolute path: %v", err)
 		} else {
 			configPath = absPath
 		}
 	}
 
-	var config GApiConfig
+	var config GApiRootConfig
 
 	switch filepath.Ext(configPath) {
 	case ".json":
@@ -74,7 +78,7 @@ func LoadConfig() (GApiConfig, string, error) {
 			log.Fatalf("Failed to parse config: %v", err)
 		}
 	default:
-		return GApiConfig{}, "", fmt.Errorf("unsupported config file extension: %s", filepath.Ext(configPath))
+		return GApiRootConfig{}, "", fmt.Errorf("unsupported config file extension: %s", filepath.Ext(configPath))
 	}
 
 	if !filepath.IsAbs(config.Project) {
@@ -85,9 +89,50 @@ func LoadConfig() (GApiConfig, string, error) {
 	return config, configPath, nil
 }
 
-func Output(config GApiConfig, builder IBuilder) error {
+func Output(config GApiRootConfig) error {
 	log.Printf("Start build gapi\n")
-	log.Printf("Project: %s\n", config.Project)
+	log.Printf("Project Dir: %s\n", config.Project)
+
+	versions := []string{"gapi", "gapi.v1"}
+
+	walkErr := filepath.Walk(config.Project, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+		if info.IsDir() {
+			return nil
+		}
+
+		if filepath.Ext(path) == ".json" {
+			content, err := os.ReadFile(path)
+			if err != nil {
+				log.Printf("warn: failed to read file %s: %v", path, err)
+				return nil // continue walking
+			}
+
+			var header gApiConfigHeader
+			if err := json.Unmarshal(content, &header); err != nil {
+				return nil // Not a gapi config file, just ignore.  continue walking
+			}
+
+			if slices.Contains(versions, header.Version) {
+				if err := OutputFile(path); err != nil {
+					return err // stop walking and return error
+				}
+			}
+		}
+		return nil
+	})
+
+	if walkErr != nil {
+		return fmt.Errorf("error walking project directory: %w", walkErr)
+	}
+
+	return nil
+}
+
+func OutputFile(absPath string) error {
+	fmt.Println(absPath)
 
 	return nil
 }

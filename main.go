@@ -7,21 +7,13 @@ import (
 )
 
 func main() {
-	config, configPath, err := core.LoadConfig()
+	config, configPath, err := core.LoadRootConfig()
 	if err != nil {
 		log.Panicf("Failed to load config: %v", err)
 	}
 
 	log.Printf("using config file: %s", configPath)
-
-	for _, output := range config.Output {
-		switch output {
-		case "golang":
-			core.Output(config, &core.GolangBuilder{})
-		case "typescript":
-			core.Output(config, &core.TypescriptBuilder{})
-		default:
-			log.Panicf("Unsupported output: %s", output)
-		}
+	if err := core.Output(config); err != nil {
+		log.Panicf("Failed to output: %v", err)
 	}
 }
