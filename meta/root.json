@@ -1,12 +1,14 @@
 {
   "Path": "/",
-  "Output": {
+  "ClientOutput": {
+    "TypeScript": {
+      "File": "${Project}/web/api/gapi-root.ts"
+    }
+  },
+  "ServerOutput": {
     "Golang": {
       "Package": "root",
       "File": "gapi-root.go"
-    },
-    "TypeScript": {
-      "File": "${Project}/web/api/gapi-root.ts"
     }
   },
   "Class": {

@@ -1,12 +1,89 @@
 package main
 
-import "fmt"
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"path/filepath"
 
-type Person struct {
-	Name string `json:"name" binding:"required"`
-	Age  int    `json:"age"`
+	"gopkg.in/yaml.v3"
+)
+
+type GApiConfig struct {
+	Listen  string   `json:"listen"`
+	Output  []string `json:"output"`
+	Project string   `json:"project"`
+}
+
+func loadConfig() (GApiConfig, string, error) {
+	configPath := ""
+	configContent := ""
+
+	if len(os.Args) > 1 {
+		if _, err := os.Stat(os.Args[1]); err == nil {
+			content, err := os.ReadFile(os.Args[1])
+			if err == nil {
+				configContent = string(content)
+				configPath = os.Args[1]
+			}
+		}
+	}
+
+	if configContent == "" {
+		// 在当前目录下，依次寻找 .gapi.json .gapi.yaml .gapi.yml
+		searchFiles := []string{"./.gapi.json", "./.gapi.yaml", "./.gapi.yml"}
+		for _, file := range searchFiles {
+			if _, err := os.Stat(file); err == nil {
+				content, err := os.ReadFile(file)
+				if err == nil {
+					configContent = string(content)
+					configPath = file
+					break
+				}
+			}
+		}
+	}
+
+	if !filepath.IsAbs(configPath) {
+		if absPath, err := filepath.Abs(configPath); err != nil {
+			return GApiConfig{}, "", fmt.Errorf("failed to convert config path to absolute path: %v", err)
+		} else {
+			configPath = absPath
+		}
+	}
+
+	var config GApiConfig
+
+	switch filepath.Ext(configPath) {
+	case ".json":
+		err := json.Unmarshal([]byte(configContent), &config)
+		if err != nil {
+			log.Fatalf("Failed to parse config: %v", err)
+		}
+	case ".yaml", ".yml":
+		err := yaml.Unmarshal([]byte(configContent), &config)
+		if err != nil {
+			log.Fatalf("Failed to parse config: %v", err)
+		}
+	default:
+		return GApiConfig{}, "", fmt.Errorf("unsupported config file extension: %s", filepath.Ext(configPath))
+	}
+
+	if !filepath.IsAbs(config.Project) {
+		configDir := filepath.Dir(configPath)
+		config.Project = filepath.Join(configDir, config.Project)
+	}
+
+	return config, configPath, nil
 }
 
 func main() {
-	fmt.Println("Hello World")
+	config, configPath, err := loadConfig()
+	if err != nil {
+		log.Panicf("Failed to load config: %v", err)
+	}
+
+	log.Printf("using config file: %s", configPath)
+	log.Printf("using project directory: %s", config.Project)
 }

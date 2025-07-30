@@ -1,12 +1,14 @@
 {
   "Path": "/api/v1/city",
-  "Output": {
+  "ClientOutput": {
+    "TypeScript": {
+      "File": "${Project}/web/api/gapi-city.ts"
+    }
+  },
+  "ServerOutput": {
     "Golang": {
       "Package": "city",
       "File": "gapi-city.go"
-    },
-    "TypeScript": {
-      "File": "${Project}/web/api/gapi-city.ts"
     }
   },
   "Import": {
