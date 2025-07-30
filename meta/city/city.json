@@ -1,0 +1,38 @@
+{
+  "Path": "/api/v1/city",
+  "Output": {
+    "Golang": {
+      "Package": "city",
+      "File": "gapi-city.go"
+    },
+    "TypeScript": {
+      "File": "${Project}/web/api/gapi-city.ts"
+    }
+  },
+  "Import": {
+    "Geo": {
+      "From": "../root",
+      "Class": "GeoLocation"
+    }
+  },
+  "Class": {
+    "City": {
+      "Name": "String",
+      "Location": "GeoLocation"
+    },
+    "PersonList": "List<Person>",
+    "PersonMap": "Map<Person>"
+  },
+  "Action": {
+    "GetPerson": {
+      "HttpMethod": "GET",
+      "Args": [
+        {
+          "Name": "id",
+          "Type": "String"
+        }
+      ],
+      "Return": ["Persion", "Error"]
+    }
+  }
+}

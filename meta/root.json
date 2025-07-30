@@ -1,0 +1,9 @@
+{
+  "Path": "/",
+  "Class": {
+    "Geo": {
+      "Lat": "Float64",
+      "Long": "Float64"
+    }
+  }
+}
