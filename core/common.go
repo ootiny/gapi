@@ -16,6 +16,16 @@ type GApiRootConfig struct {
 	Project string `json:"project"`
 }
 
+type GApiOutputConfig struct {
+	Package string `json:"package"`
+	File    string `json:"file"`
+}
+
+type GApiImportConfig struct {
+	From string `json:"from"`
+	Type string `json:"type"`
+}
+
 type gApiConfigHeader struct {
 	Version string `json:"version"`
 }

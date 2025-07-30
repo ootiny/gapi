@@ -3,6 +3,10 @@ package core
 type TypescriptBuilder struct {
 }
 
+func (p *TypescriptBuilder) BuildHeader(packageName string) (string, error) {
+	return "", nil
+}
+
 func (p *TypescriptBuilder) BuildImport() (string, error) {
 	return "", nil
 }

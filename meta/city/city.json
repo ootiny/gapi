@@ -1,24 +1,25 @@
 {
   "version": "gapi.v1",
   "path": "/api/v1/city",
-  "client": {
-    "typescript": {
-      "file": "${project}/web/api/gapi-city.ts"
-    }
-  },
-  "server": {
-    "golang": {
+  "output": [
+    {
+      "kind": "client",
+      "language": "typescript",
+      "package": "city",
+      "file": "gapi-city.go"
+    },
+    {
+      "kind": "server",
+      "language": "golang",
       "package": "city",
       "file": "gapi-city.go"
     }
-  },
-  "import": {
+  ],
+  "class": {
     "GeoLocation": {
       "from": "../root",
-      "class": "Geo"
-    }
-  },
-  "class": {
+      "name": "Geo"
+    },
     "City": {
       "name": {
         "type": "String",
