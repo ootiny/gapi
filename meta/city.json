@@ -5,19 +5,18 @@
     {
       "kind": "client",
       "language": "typescript",
-      "package": "city",
-      "filePath": "gapi-city.ts"
+      "filePath": "${ProjectDir}/web/gapi/city.ts"
     },
     {
       "kind": "server",
       "language": "golang",
       "package": "city",
-      "filePath": "gapi-city.go"
+      "filePath": "${ProjectDir}/server/gapi/city.go"
     }
   ],
   "definitions": {
     "GeoLocation": {
-      "from": "../root",
+      "from": "./root",
       "name": "Geo"
     },
     "City": {

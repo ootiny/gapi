@@ -1,21 +1,23 @@
 {
   "version": "gapi.v1",
-  "path": "/",
-  "client": {
-    "typescript": {
-      "file": "${project}/web/api/gapi-root.ts"
+  "apiPath": "/",
+  "outputs": [
+    {
+      "kind": "client",
+      "language": "typescript",
+      "filePath": "${ProjectDir}/web/gapi/root.ts"
+    },
+    {
+      "kind": "server",
+      "language": "golang",
+      "package": "gapi",
+      "filePath": "${ProjectDir}/server/gapi/root.go"
     }
-  },
-  "server": {
-    "golang": {
-      "package": "root",
-      "file": "gapi-root.go"
-    }
-  },
-  "class": {
+  ],
+  "definitions": {
     "Geo": {
       "lat": "Float64",
-      "long": "Float64"
+      "lon": "Float64"
     }
   }
 }
