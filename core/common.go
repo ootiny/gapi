@@ -76,56 +76,47 @@ type IBuilder interface {
 	BuildClientAction() (string, error)
 }
 
-func LoadConfig(filePath string) (GApiConfig, error) {
+func UnmarshalConfig(filePath string, v any) error {
 	if content, err := os.ReadFile(filePath); err != nil {
-		return GApiConfig{}, fmt.Errorf("failed to read config file: %w", err)
+		return err
 	} else {
-		var config GApiConfig
-
 		switch filepath.Ext(filePath) {
 		case ".json":
-			if err := json.Unmarshal(content, &config); err != nil {
-				return GApiConfig{}, fmt.Errorf("failed to parse config file: %w", err)
-			} else {
-				return config, nil
-			}
+			return json.Unmarshal(content, v)
 		case ".yaml", ".yml":
-			if err := yaml.Unmarshal(content, &config); err != nil {
-				return GApiConfig{}, fmt.Errorf("failed to parse config file: %w", err)
-			} else {
-				return config, nil
-			}
+			return yaml.Unmarshal(content, v)
 		default:
-			return GApiConfig{}, fmt.Errorf("unsupported config file extension: %s", filepath.Ext(filePath))
+			return fmt.Errorf("unsupported file extension: %s", filepath.Ext(filePath))
 		}
 	}
 }
 
+func LoadConfig(filePath string) (GApiConfig, error) {
+	var config GApiConfig
+
+	if err := UnmarshalConfig(filePath, &config); err != nil {
+		return GApiConfig{}, fmt.Errorf("failed to parse config file: %w", err)
+	}
+
+	return config, nil
+}
+
 func LoadRootConfig() (GApiRootConfig, string, error) {
 	configPath := ""
-	configContent := ""
 
 	if len(os.Args) > 1 {
-		if _, err := os.Stat(os.Args[1]); err == nil {
-			content, err := os.ReadFile(os.Args[1])
-			if err == nil {
-				configContent = string(content)
-				configPath = os.Args[1]
-			}
+		if fileInfo, err := os.Stat(os.Args[1]); err == nil && !fileInfo.IsDir() {
+			configPath = os.Args[1]
 		}
 	}
 
-	if configContent == "" {
+	if configPath == "" {
 		// 在当前目录下，依次寻找 .gapi.json .gapi.yaml .gapi.yml
 		searchFiles := []string{"./.gapi.json", "./.gapi.yaml", "./.gapi.yml"}
 		for _, file := range searchFiles {
-			if _, err := os.Stat(file); err == nil {
-				content, err := os.ReadFile(file)
-				if err == nil {
-					configContent = string(content)
-					configPath = file
-					break
-				}
+			if fileInfo, err := os.Stat(file); err == nil && !fileInfo.IsDir() {
+				configPath = file
+				break
 			}
 		}
 	}
@@ -140,19 +131,8 @@ func LoadRootConfig() (GApiRootConfig, string, error) {
 
 	var config GApiRootConfig
 
-	switch filepath.Ext(configPath) {
-	case ".json":
-		err := json.Unmarshal([]byte(configContent), &config)
-		if err != nil {
-			log.Fatalf("Failed to parse config: %v", err)
-		}
-	case ".yaml", ".yml":
-		err := yaml.Unmarshal([]byte(configContent), &config)
-		if err != nil {
-			log.Fatalf("Failed to parse config: %v", err)
-		}
-	default:
-		return GApiRootConfig{}, "", fmt.Errorf("unsupported config file extension: %s", filepath.Ext(configPath))
+	if err := UnmarshalConfig(configPath, &config); err != nil {
+		return GApiRootConfig{}, "", fmt.Errorf("failed to parse config file: %w", err)
 	}
 
 	if !filepath.IsAbs(config.Project) {
@@ -182,20 +162,8 @@ func Output(config GApiRootConfig) error {
 		}
 
 		switch filepath.Ext(path) {
-		case ".json":
-			if content, err := os.ReadFile(path); err != nil {
-				return err // file can not be read, return error
-			} else if err := json.Unmarshal(content, &header); err != nil {
-				return nil // Not a gapi config file, just ignore.  continue walking
-			} else if slices.Contains(versions, header.Version) {
-				return OutputFile(path) // output file
-			} else {
-				return nil
-			}
-		case ".yaml", ".yml":
-			if content, err := os.ReadFile(path); err != nil {
-				return err // file can not be read, return error
-			} else if err := yaml.Unmarshal(content, &header); err != nil {
+		case ".json", ".yaml", ".yml":
+			if err := UnmarshalConfig(path, &header); err != nil {
 				return nil // Not a gapi config file, just ignore.  continue walking
 			} else if slices.Contains(versions, header.Version) {
 				return OutputFile(path) // output file
