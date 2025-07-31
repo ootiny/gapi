@@ -16,8 +16,20 @@
   ],
   "definitions": {
     "Geo": {
-      "lat": "Float64",
-      "lon": "Float64"
+      "attributes": [
+        {
+          "name": "latitude",
+          "type": "Float64",
+          "required": true,
+          "description": "The latitude of the geo location"
+        },
+        {
+          "name": "longitude",
+          "type": "Float64",
+          "required": true,
+          "description": "The longitude of the geo location"
+        }
+      ]
     }
   }
 }

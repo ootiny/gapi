@@ -183,7 +183,15 @@ func Output(config GApiRootConfig) error {
 }
 
 func OutputFile(absPath string) error {
-	fmt.Println(absPath)
 
-	return nil
+	if config, err := LoadConfig(absPath); err != nil {
+		return fmt.Errorf("failed to load config file: %w", err)
+	} else {
+		jsonBytes, _ := json.MarshalIndent(config, "", "  ")
+
+		fmt.Println(string(jsonBytes))
+
+		return nil
+	}
+
 }
