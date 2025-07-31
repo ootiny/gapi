@@ -1,20 +1,14 @@
 package core
 
 type GolangBuilder struct {
+	output GApiOutputConfig
+	config GApiConfig
 }
 
-func (p *GolangBuilder) BuildImport() (string, error) {
+func (p *GolangBuilder) BuildServer() (string, error) {
 	return "", nil
 }
 
-func (p *GolangBuilder) BuildClass() (string, error) {
-	return "", nil
-}
-
-func (p *GolangBuilder) BuildServerAction() (string, error) {
-	return "", nil
-}
-
-func (p *GolangBuilder) BuildClientAction() (string, error) {
+func (p *GolangBuilder) BuildClient() (string, error) {
 	return "", nil
 }

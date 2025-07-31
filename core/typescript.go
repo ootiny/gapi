@@ -1,24 +1,14 @@
 package core
 
 type TypescriptBuilder struct {
+	output GApiOutputConfig
+	config GApiConfig
 }
 
-func (p *TypescriptBuilder) BuildHeader(packageName string) (string, error) {
+func (p *TypescriptBuilder) BuildServer() (string, error) {
 	return "", nil
 }
 
-func (p *TypescriptBuilder) BuildImport() (string, error) {
-	return "", nil
-}
-
-func (p *TypescriptBuilder) BuildClass() (string, error) {
-	return "", nil
-}
-
-func (p *TypescriptBuilder) BuildServerAction() (string, error) {
-	return "", nil
-}
-
-func (p *TypescriptBuilder) BuildClientAction() (string, error) {
+func (p *TypescriptBuilder) BuildClient() (string, error) {
 	return "", nil
 }

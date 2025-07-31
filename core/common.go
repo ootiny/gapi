@@ -7,9 +7,15 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
+
+type IBuilder interface {
+	BuildServer() (string, error)
+	BuildClient() (string, error)
+}
 
 type GApiRootConfig struct {
 	Listen  string `json:"listen"`
@@ -69,11 +75,31 @@ type GApiConfig struct {
 	Actions     map[string]GApiActionConfig     `json:"actions" required:"true"`
 }
 
-type IBuilder interface {
-	BuildImport() (string, error)
-	BuildClass() (string, error)
-	BuildServerAction() (string, error)
-	BuildClientAction() (string, error)
+func ParseProjectDir(filePath string, projectDir string) string {
+	// Check for project directory placeholders in the filePath
+	patterns := []string{
+		"$projectdir",
+		"$projectDir",
+		"${ProjectDir}",
+		"$ProjectDir",
+		"$project",
+		"$Project",
+		"${projectDir}",
+		"${projectdir}",
+		"${Project}",
+		"${project}",
+	}
+
+	result := filePath
+
+	for _, pattern := range patterns {
+		if strings.HasPrefix(filePath, pattern) {
+			result = strings.Replace(result, pattern, projectDir, 1)
+			return result
+		}
+	}
+
+	return result
 }
 
 func UnmarshalConfig(filePath string, v any) error {
@@ -166,7 +192,7 @@ func Output(config GApiRootConfig) error {
 			if err := UnmarshalConfig(path, &header); err != nil {
 				return nil // Not a gapi config file, just ignore.  continue walking
 			} else if slices.Contains(versions, header.Version) {
-				return OutputFile(path) // output file
+				return OutputFile(config.Project, path) // output file
 			} else {
 				return nil
 			}
@@ -182,16 +208,54 @@ func Output(config GApiRootConfig) error {
 	return nil
 }
 
-func OutputFile(absPath string) error {
-
+func OutputFile(projectDir string, absPath string) error {
 	if config, err := LoadConfig(absPath); err != nil {
 		return fmt.Errorf("failed to load config file: %w", err)
 	} else {
-		jsonBytes, _ := json.MarshalIndent(config, "", "  ")
+		for _, output := range config.Outputs {
+			var builder IBuilder
+			var content string
+			var err error
 
-		fmt.Println(string(jsonBytes))
+			switch output.Language {
+			case "golang":
+				builder = &GolangBuilder{
+					output: output,
+					config: config,
+				}
+			case "typescript":
+				builder = &TypescriptBuilder{
+					output: output,
+					config: config,
+				}
+			default:
+				return fmt.Errorf("unsupported language: %s", output.Language)
+			}
+
+			switch output.Kind {
+			case "server":
+				content, err = builder.BuildServer()
+			case "client":
+				content, err = builder.BuildClient()
+			default:
+				return fmt.Errorf("unsupported kind: %s", output.Kind)
+			}
+
+			if err != nil {
+				return fmt.Errorf("failed to build %s: %w", output.Kind, err)
+			}
+
+			if err := os.WriteFile(
+				ParseProjectDir(output.FilePath, projectDir),
+				[]byte(content),
+				0644,
+			); err != nil {
+				return fmt.Errorf("failed to write to file: %w", err)
+			}
+
+			log.Printf("Build %s success: %s", output.Kind, output.FilePath)
+		}
 
 		return nil
 	}
-
 }
