@@ -1,21 +1,21 @@
 {
   "version": "gapi.v1",
-  "path": "/api/v1/city",
-  "output": [
+  "apiPath": "/api/v1/city",
+  "outputs": [
     {
       "kind": "client",
       "language": "typescript",
       "package": "city",
-      "file": "gapi-city.go"
+      "filePath": "gapi-city.ts"
     },
     {
       "kind": "server",
       "language": "golang",
       "package": "city",
-      "file": "gapi-city.go"
+      "filePath": "gapi-city.go"
     }
   ],
-  "class": {
+  "definitions": {
     "GeoLocation": {
       "from": "../root",
       "name": "Geo"
@@ -31,17 +31,17 @@
       }
     }
   },
-  "action": {
+  "actions": {
     "GetCity": {
       "method": "GET",
-      "args": [
+      "parameters": [
         {
           "name": "id",
           "type": "String",
           "required": true
         }
       ],
-      "return": ["City", "Error"]
+      "returns": ["City", "Error"]
     }
   }
 }
