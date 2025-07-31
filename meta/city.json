@@ -1,6 +1,7 @@
 {
   "version": "gapi.v1",
   "apiPath": "/api/v1/city",
+  "description": "City API",
   "outputs": [
     {
       "kind": "client",
@@ -22,25 +23,38 @@
     "City": {
       "name": {
         "type": "String",
-        "required": true
+        "required": true,
+        "description": "The name of the city"
       },
       "location": {
         "type": "GeoLocation",
-        "required": true
+        "required": true,
+        "description": "The location of the city"
       }
     }
   },
   "actions": {
     "GetCity": {
+      "description": "Get a city by id",
       "method": "GET",
       "parameters": [
         {
           "name": "id",
+          "description": "The id of the city",
           "type": "String",
           "required": true
         }
       ],
-      "returns": ["City", "Error"]
+      "returns": [
+        {
+          "type": "City",
+          "description": "The city"
+        },
+        {
+          "type": "Error",
+          "description": "The error"
+        }
+      ]
     }
   }
 }
