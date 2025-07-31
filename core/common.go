@@ -32,7 +32,7 @@ type GApiDefinitionAttributeConfig struct {
 
 type GApiDefinitionImportConfig struct {
 	From string `json:"from"`
-	Type string `json:"type"`
+	Name string `json:"name"`
 }
 
 type GApiDefinitionConfig struct {
