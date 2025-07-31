@@ -19,23 +19,54 @@ type GApiRootConfig struct {
 type GApiOutputConfig struct {
 	Kind     string `json:"kind" required:"true"`
 	Language string `json:"language" required:"true"`
-	Package  string `json:"package,omitempty"`
+	Package  string `json:"package"`
 	FilePath string `json:"filePath" required:"true"`
 }
 
+type GApiDefinitionAttributeConfig struct {
+	Name        string `json:"name" required:"true"`
+	Type        string `json:"type" required:"true"`
+	Required    bool   `json:"required"`
+	Description string `json:"description"`
+}
+
+type GApiDefinitionImportConfig struct {
+	From string `json:"from"`
+	Type string `json:"type"`
+}
+
 type GApiDefinitionConfig struct {
-	Name string `json:"name" required:"true"`
-	From string `json:"from"`
-	Type string `json:"type"`
+	Description string                          `json:"description"`
+	Attributes  []GApiDefinitionAttributeConfig `json:"attributes"`
+	Import      GApiDefinitionImportConfig      `json:"import"`
 }
 
-type GApiImportConfig struct {
-	From string `json:"from"`
-	Type string `json:"type"`
+type GApiActionParameterConfig struct {
+	Name        string `json:"name" required:"true"`
+	Type        string `json:"type" required:"true"`
+	Required    bool   `json:"required"`
+	Description string `json:"description"`
 }
 
-type gApiConfigHeader struct {
-	Version string `json:"version"`
+type GApiActionReturnConfig struct {
+	Type        string `json:"type" required:"true"`
+	Description string `json:"description"`
+}
+
+type GApiActionConfig struct {
+	Description string                      `json:"description"`
+	Method      string                      `json:"method" required:"true"`
+	Parameters  []GApiActionParameterConfig `json:"parameters"`
+	Returns     []GApiActionReturnConfig    `json:"returns"`
+}
+
+type GApiConfig struct {
+	Version     string                          `json:"version" required:"true"`
+	ApiPath     string                          `json:"apiPath" required:"true"`
+	Outputs     []GApiOutputConfig              `json:"outputs" required:"true"`
+	Description string                          `json:"description"`
+	Definitions map[string]GApiDefinitionConfig `json:"definitions" required:"true"`
+	Actions     map[string]GApiActionConfig     `json:"actions" required:"true"`
 }
 
 type IBuilder interface {
@@ -128,7 +159,9 @@ func Output(config GApiRootConfig) error {
 				return nil // continue walking
 			}
 
-			var header gApiConfigHeader
+			var header struct {
+				Version string `json:"version"`
+			}
 			if err := json.Unmarshal(content, &header); err != nil {
 				return nil // Not a gapi config file, just ignore.  continue walking
 			}
