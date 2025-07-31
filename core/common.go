@@ -17,8 +17,16 @@ type GApiRootConfig struct {
 }
 
 type GApiOutputConfig struct {
-	Package string `json:"package"`
-	File    string `json:"file"`
+	Kind     string `json:"kind" required:"true"`
+	Language string `json:"language" required:"true"`
+	Package  string `json:"package,omitempty"`
+	FilePath string `json:"filePath" required:"true"`
+}
+
+type GApiDefinitionConfig struct {
+	Name string `json:"name" required:"true"`
+	From string `json:"from"`
+	Type string `json:"type"`
 }
 
 type GApiImportConfig struct {

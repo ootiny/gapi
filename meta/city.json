@@ -15,11 +15,13 @@
       "filePath": "${ProjectDir}/server/gapi/city.go"
     }
   ],
-  "definitions": {
+  "imports": {
     "GeoLocation": {
       "from": "./root",
       "name": "Geo"
-    },
+    }
+  },
+  "definitions": {
     "City": {
       "name": {
         "type": "String",
