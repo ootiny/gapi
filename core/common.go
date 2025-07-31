@@ -76,6 +76,31 @@ type IBuilder interface {
 	BuildClientAction() (string, error)
 }
 
+func LoadConfig(filePath string) (GApiConfig, error) {
+	if content, err := os.ReadFile(filePath); err != nil {
+		return GApiConfig{}, fmt.Errorf("failed to read config file: %w", err)
+	} else {
+		var config GApiConfig
+
+		switch filepath.Ext(filePath) {
+		case ".json":
+			if err := json.Unmarshal(content, &config); err != nil {
+				return GApiConfig{}, fmt.Errorf("failed to parse config file: %w", err)
+			} else {
+				return config, nil
+			}
+		case ".yaml", ".yml":
+			if err := yaml.Unmarshal(content, &config); err != nil {
+				return GApiConfig{}, fmt.Errorf("failed to parse config file: %w", err)
+			} else {
+				return config, nil
+			}
+		default:
+			return GApiConfig{}, fmt.Errorf("unsupported config file extension: %s", filepath.Ext(filePath))
+		}
+	}
+}
+
 func LoadRootConfig() (GApiRootConfig, string, error) {
 	configPath := ""
 	configContent := ""
@@ -152,27 +177,34 @@ func Output(config GApiRootConfig) error {
 			return nil
 		}
 
-		if filepath.Ext(path) == ".json" {
-			content, err := os.ReadFile(path)
-			if err != nil {
-				log.Printf("warn: failed to read file %s: %v", path, err)
-				return nil // continue walking
-			}
-
-			var header struct {
-				Version string `json:"version"`
-			}
-			if err := json.Unmarshal(content, &header); err != nil {
-				return nil // Not a gapi config file, just ignore.  continue walking
-			}
-
-			if slices.Contains(versions, header.Version) {
-				if err := OutputFile(path); err != nil {
-					return err // stop walking and return error
-				}
-			}
+		var header struct {
+			Version string `json:"version"`
 		}
-		return nil
+
+		switch filepath.Ext(path) {
+		case ".json":
+			if content, err := os.ReadFile(path); err != nil {
+				return err // file can not be read, return error
+			} else if err := json.Unmarshal(content, &header); err != nil {
+				return nil // Not a gapi config file, just ignore.  continue walking
+			} else if slices.Contains(versions, header.Version) {
+				return OutputFile(path) // output file
+			} else {
+				return nil
+			}
+		case ".yaml", ".yml":
+			if content, err := os.ReadFile(path); err != nil {
+				return err // file can not be read, return error
+			} else if err := yaml.Unmarshal(content, &header); err != nil {
+				return nil // Not a gapi config file, just ignore.  continue walking
+			} else if slices.Contains(versions, header.Version) {
+				return OutputFile(path) // output file
+			} else {
+				return nil
+			}
+		default:
+			return nil
+		}
 	})
 
 	if walkErr != nil {
