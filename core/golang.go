@@ -1,10 +1,16 @@
 package core
 
-import "fmt"
+import (
+	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+)
 
 type GolangBuilder struct {
 	rootConfig  GApiRootConfig
 	buildConfig GApiConfig
+	output      GApiRootOutputConfig
 }
 
 func (p *GolangBuilder) BuildServer() error {
@@ -12,13 +18,31 @@ func (p *GolangBuilder) BuildServer() error {
 		return fmt.Errorf("package is required")
 	}
 
-	content := fmt.Sprintf(`// %s: %s
+	outDir := filepath.Join(p.output.Dir, p.buildConfig.Package)
+	if err := os.MkdirAll(outDir, 0755); err != nil {
+		return fmt.Errorf("failed to create output directory: %w", err)
+	}
+
+	header := fmt.Sprintf(`// %s: %s
 package %s
-`, BuilderTag, BuilderDescription, p.buildConfig.Package)
+`, BuilderStartTag, BuilderDescription, p.buildConfig.Package)
 
-	fmt.Println(content)
+	imports := []string{}
 
-	return nil
+	defines := []string{}
+
+	actions := []string{}
+
+	content := fmt.Sprintf(
+		"%s\n%s\n%s\n%s\n//%s",
+		header,
+		strings.Join(imports, "\n"),
+		strings.Join(defines, "\n"),
+		strings.Join(actions, "\n"),
+		BuilderEndTag,
+	)
+
+	return os.WriteFile(filepath.Join(outDir, "gapi.go"), []byte(content), 0644)
 }
 
 func (p *GolangBuilder) BuildClient() error {

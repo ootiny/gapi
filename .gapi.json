@@ -4,11 +4,13 @@
   "outputs": [
     {
       "kind": "client",
-      "language": "typescript"
+      "language": "typescript",
+      "dir": "${ProjectDir}/web/gapi"
     },
     {
       "kind": "server",
-      "language": "golang"
+      "language": "golang",
+      "dir": "${ProjectDir}/server/gapi"
     }
   ],
   "serverModule": "github.com/ootiny/gapi",
