@@ -7,13 +7,13 @@ import (
 )
 
 func main() {
-	config, configPath, err := core.LoadRootConfig()
+	rootConfig, configPath, err := core.LoadRootConfig()
 	if err != nil {
 		log.Panicf("Failed to load config: %v", err)
 	}
 
 	log.Printf("using config file: %s", configPath)
-	if err := core.Output(config); err != nil {
+	if err := core.Output(rootConfig); err != nil {
 		log.Panicf("Failed to output: %v", err)
 	}
 }

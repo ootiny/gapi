@@ -1,4 +1,16 @@
 {
   "project": ".",
-  "listen": "0.0.0.0:3333"
+  "listen": "0.0.0.0:3333",
+  "outputs": [
+    {
+      "kind": "client",
+      "language": "typescript"
+    },
+    {
+      "kind": "server",
+      "language": "golang"
+    }
+  ],
+  "serverModule": "github.com/ootiny/gapi",
+  "clientModule": "github.com/ootiny/gapi"
 }

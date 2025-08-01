@@ -1,19 +1,7 @@
 {
   "version": "gapi.v1",
   "apiPath": "/",
-  "outputs": [
-    {
-      "kind": "client",
-      "language": "typescript",
-      "filePath": "${ProjectDir}/web/gapi/root.ts"
-    },
-    {
-      "kind": "server",
-      "language": "golang",
-      "package": "gapi",
-      "filePath": "${ProjectDir}/server/gapi/root.go"
-    }
-  ],
+  "package": "common",
   "definitions": {
     "Geo": {
       "attributes": [

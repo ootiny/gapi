@@ -1,20 +1,8 @@
 {
   "version": "gapi.v1",
   "apiPath": "/api/v1/city",
+  "package": "city",
   "description": "City API",
-  "outputs": [
-    {
-      "kind": "client",
-      "language": "typescript",
-      "filePath": "${ProjectDir}/web/gapi/city.ts"
-    },
-    {
-      "kind": "server",
-      "language": "golang",
-      "package": "city",
-      "filePath": "${ProjectDir}/server/gapi/city.go"
-    }
-  ],
   "definitions": {
     "GeoLocation": {
       "import": {
