@@ -33,13 +33,12 @@ type GApiRootOutputConfig struct {
 	Kind     string `json:"kind" required:"true"`
 	Language string `json:"language" required:"true"`
 	Dir      string `json:"dir" required:"true"`
+	GoModule string `json:"goModule"`
 }
 
 type GApiRootConfig struct {
-	Listen       string                 `json:"listen"`
-	ServerModule string                 `json:"serverModule"`
-	ClientModule string                 `json:"clientModule"`
-	Outputs      []GApiRootOutputConfig `json:"outputs"`
+	Listen  string                 `json:"listen"`
+	Outputs []GApiRootOutputConfig `json:"outputs"`
 }
 
 type GApiDefinitionAttributeConfig struct {
