@@ -207,86 +207,77 @@ func Output() error {
 
 	versions := []string{"gapi", "gapi.v1"}
 	projectDir := filepath.Dir(rootConfigPath)
-	log.Printf("using config file: %s", rootConfigPath)
-	log.Printf("Start build gapi\n")
-	log.Printf("Project Dir: %s\n", projectDir)
+	log.Printf("gapi: config file: %s\n", rootConfigPath)
+	log.Printf("gapi: project dir: %s\n", projectDir)
 
-	walkErr := filepath.Walk(projectDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-		if info.IsDir() {
-			return nil
-		}
-
-		var header struct {
-			Version string `json:"version"`
-		}
-
-		switch filepath.Ext(path) {
-		case ".json", ".yaml", ".yml":
-			if err := UnmarshalConfig(path, &header); err != nil {
-				return nil // Not a gapi config file, just ignore.  continue walking
-			} else if slices.Contains(versions, header.Version) {
-				return OutputFile(rootConfig, rootConfigPath, path) // output file
-			} else {
+	for _, output := range rootConfig.Outputs {
+		walkErr := filepath.Walk(projectDir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if info.IsDir() {
 				return nil
 			}
-		default:
-			return nil
-		}
-	})
 
-	if walkErr != nil {
-		return fmt.Errorf("error walking project directory: %w", walkErr)
+			var header struct {
+				Version string `json:"version"`
+			}
+
+			switch filepath.Ext(path) {
+			case ".json", ".yaml", ".yml":
+				if err := UnmarshalConfig(path, &header); err != nil {
+					return nil // Not a gapi config file, just ignore.  continue walking
+				} else if slices.Contains(versions, header.Version) {
+					return OutputFile(rootConfig, rootConfigPath, path, output) // output file
+				} else {
+					return nil
+				}
+			default:
+				return nil
+			}
+		})
+
+		if walkErr != nil {
+			return fmt.Errorf("error walking project directory: %w", walkErr)
+		}
 	}
 
 	return nil
 }
 
-func OutputFile(rootConfig GApiRootConfig, rootConfigPath string, buildConfigPath string) error {
+func OutputFile(rootConfig GApiRootConfig, rootConfigPath string, buildConfigPath string, output GApiRootOutputConfig) error {
 	if buildConfig, err := LoadConfig(buildConfigPath); err != nil {
 		return fmt.Errorf("failed to load config file: %w", err)
 	} else {
-		for _, output := range rootConfig.Outputs {
-			var builder IBuilder
-			var err error
-
-			buildContext := BuildContext{
-				output:          output,
-				rootConfig:      rootConfig,
-				buildConfig:     buildConfig,
-				rootConfigPath:  rootConfigPath,
-				buildConfigPath: buildConfigPath,
-			}
-
-			switch output.Language {
-			case "golang":
-				builder = &GolangBuilder{
-					BuildContext: buildContext,
-				}
-			case "typescript":
-				builder = &TypescriptBuilder{
-					BuildContext: buildContext,
-				}
-			default:
-				return fmt.Errorf("unsupported language: %s", output.Language)
-			}
-
-			switch output.Kind {
-			case "server":
-				if err = builder.BuildServer(); err != nil {
-					return err
-				}
-			case "client":
-				if err = builder.BuildClient(); err != nil {
-					return err
-				}
-			default:
-				return fmt.Errorf("unsupported kind: %s", output.Kind)
-			}
+		var builder IBuilder
+		buildContext := BuildContext{
+			output:          output,
+			rootConfig:      rootConfig,
+			buildConfig:     buildConfig,
+			rootConfigPath:  rootConfigPath,
+			buildConfigPath: buildConfigPath,
 		}
 
-		return nil
+		switch output.Language {
+		case "golang":
+			builder = &GolangBuilder{
+				BuildContext: buildContext,
+			}
+		case "typescript":
+			builder = &TypescriptBuilder{
+				BuildContext: buildContext,
+			}
+		default:
+			return fmt.Errorf("unsupported language: %s", output.Language)
+		}
+
+		switch output.Kind {
+		case "server":
+			return builder.BuildServer()
+		case "client":
+			return builder.BuildClient()
+		default:
+			return fmt.Errorf("unsupported kind: %s", output.Kind)
+		}
 	}
 }

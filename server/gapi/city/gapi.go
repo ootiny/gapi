@@ -5,13 +5,13 @@ import (
 	__common "github.com/ootiny/gapi/server/gapi/common"
 )
 
-type GeoLocation = __common.Geo
-
 type City struct {
 	Name string`json:"name" required:"true"`
 	Location GeoLocation`json:"location" required:"true"`
 	Description string`json:"description"`
 }
+
+type GeoLocation = __common.Geo
 
 type FuncGetCity = func(id string) (City, error)
 type HookGetCity = func(fn FuncGetCity) error

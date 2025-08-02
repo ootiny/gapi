@@ -1,4 +1,4 @@
-package __system__
+package __gapi_system__
 
 import (
 	"crypto/tls"
