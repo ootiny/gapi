@@ -1,4 +1,4 @@
-package gapi
+package __system__
 
 import (
 	"crypto/tls"
@@ -39,8 +39,9 @@ func ListenAndServeTLSWithCert(addr string, certBytes []byte, keyBytes []byte) e
 		TLSConfig: tlsConfig,
 	}
 
-	// Call ListenAndServeTLS on our custom server.
-	// We pass empty strings for the certFile and keyFile because
-	// the configuration is already provided in server.TLSConfig.
 	return server.ListenAndServeTLS("", "")
+}
+
+func RegisterHandler(path string, handler http.HandlerFunc) {
+	gMux.HandleFunc(path, handler)
 }

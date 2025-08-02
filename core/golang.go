@@ -7,13 +7,12 @@ import (
 	"strings"
 )
 
-func toPackageImport(packageName string) string {
+func toGolangImport(packageName string) string {
 	packageName = strings.ReplaceAll(packageName, "/", "_")
 	return "__" + packageName
 }
 
 func toGolangName(name string) string {
-	// 如果第一个字母是小写， 则把第一个字母大写
 	if name[0] >= 'a' && name[0] <= 'z' {
 		return strings.ToUpper(name[:1]) + name[1:]
 	} else {
@@ -93,7 +92,7 @@ package %s
 
 			imports = append(imports, fmt.Sprintf(
 				"\t%s \"%s/%s\"",
-				toPackageImport(define.Import.Package),
+				toGolangImport(define.Import.Package),
 				p.output.GoModule,
 				define.Import.Package,
 			))
@@ -101,7 +100,7 @@ package %s
 			defines = append(defines, fmt.Sprintf(
 				"type %s = %s.%s\n",
 				name,
-				toPackageImport(define.Import.Package),
+				toGolangImport(define.Import.Package),
 				define.Import.Name,
 			))
 		} else if len(define.Attributes) > 0 {

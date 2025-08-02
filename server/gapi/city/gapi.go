@@ -8,9 +8,9 @@ import (
 type GeoLocation = __common.Geo
 
 type City struct {
-	Name        string      `json:"name" required:"true"`
-	Location    GeoLocation `json:"location" required:"true"`
-	Description string      `json:"description"`
+	Name string`json:"name" required:"true"`
+	Location GeoLocation`json:"location" required:"true"`
+	Description string`json:"description"`
 }
 
 type FuncGetCity = func(id string) (City, error)
