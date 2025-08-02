@@ -8,9 +8,7 @@ import (
 )
 
 type GolangBuilder struct {
-	rootConfig  GApiRootConfig
-	buildConfig GApiConfig
-	output      GApiRootOutputConfig
+	BuildContext
 }
 
 func (p *GolangBuilder) BuildServer() error {

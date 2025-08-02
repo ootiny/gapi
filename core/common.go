@@ -21,6 +21,14 @@ type IBuilder interface {
 	BuildClient() error
 }
 
+type BuildContext struct {
+	rootConfig  GApiRootConfig
+	buildConfig GApiConfig
+	output      GApiRootOutputConfig
+	projectDir  string
+	configPath  string
+}
+
 type GApiRootOutputConfig struct {
 	Kind     string `json:"kind" required:"true"`
 	Language string `json:"language" required:"true"`
@@ -198,14 +206,11 @@ func Output() error {
 		log.Panicf("Failed to load config: %v", err)
 	}
 
+	versions := []string{"gapi", "gapi.v1"}
 	projectDir := filepath.Dir(configPath)
-
 	log.Printf("using config file: %s", configPath)
-
 	log.Printf("Start build gapi\n")
 	log.Printf("Project Dir: %s\n", projectDir)
-
-	versions := []string{"gapi", "gapi.v1"}
 
 	walkErr := filepath.Walk(projectDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -224,7 +229,7 @@ func Output() error {
 			if err := UnmarshalConfig(path, &header); err != nil {
 				return nil // Not a gapi config file, just ignore.  continue walking
 			} else if slices.Contains(versions, header.Version) {
-				return OutputFile(rootConfig, path) // output file
+				return OutputFile(rootConfig, projectDir, path) // output file
 			} else {
 				return nil
 			}
@@ -240,7 +245,7 @@ func Output() error {
 	return nil
 }
 
-func OutputFile(rootConfig GApiRootConfig, configAbsPath string) error {
+func OutputFile(rootConfig GApiRootConfig, projectAbsDir string, configAbsPath string) error {
 	if buildConfig, err := LoadConfig(configAbsPath); err != nil {
 		return fmt.Errorf("failed to load config file: %w", err)
 	} else {
@@ -248,18 +253,22 @@ func OutputFile(rootConfig GApiRootConfig, configAbsPath string) error {
 			var builder IBuilder
 			var err error
 
+			buildContext := BuildContext{
+				rootConfig:  rootConfig,
+				buildConfig: buildConfig,
+				output:      output,
+				projectDir:  projectAbsDir,
+				configPath:  configAbsPath,
+			}
+
 			switch output.Language {
 			case "golang":
 				builder = &GolangBuilder{
-					rootConfig:  rootConfig,
-					buildConfig: buildConfig,
-					output:      output,
+					BuildContext: buildContext,
 				}
 			case "typescript":
 				builder = &TypescriptBuilder{
-					rootConfig:  rootConfig,
-					buildConfig: buildConfig,
-					output:      output,
+					BuildContext: buildContext,
 				}
 			default:
 				return fmt.Errorf("unsupported language: %s", output.Language)

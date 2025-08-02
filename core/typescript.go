@@ -1,9 +1,7 @@
 package core
 
 type TypescriptBuilder struct {
-	rootConfig  GApiRootConfig
-	buildConfig GApiConfig
-	output      GApiRootOutputConfig
+	BuildContext
 }
 
 func (p *TypescriptBuilder) BuildServer() error {
