@@ -2,18 +2,25 @@
 package city
 
 import (
+	__system "github.com/ootiny/gapi/server/gapi/__gapi_system__"
 	__common "github.com/ootiny/gapi/server/gapi/common"
 )
 
-type City struct {
-	Name string`json:"name" required:"true"`
-	Location GeoLocation`json:"location" required:"true"`
-	Description string`json:"description"`
-}
-
 type GeoLocation = __common.Geo
+
+type City struct {
+	Name        string      `json:"name" required:"true"`
+	Location    GeoLocation `json:"location" required:"true"`
+	Description string      `json:"description"`
+}
 
 type FuncGetCity = func(id string) (City, error)
 type HookGetCity = func(fn FuncGetCity) error
+
+func init() {
+	__system.RegisterHandler("/api/v1/city", func(w __system.IResponse, r __system.IRequest) {
+
+	})
+}
 
 //tag-gapi-builder-end

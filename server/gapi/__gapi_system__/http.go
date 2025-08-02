@@ -7,6 +7,12 @@ import (
 
 var gMux = http.NewServeMux()
 
+type IResponse interface {
+}
+
+type IRequest interface {
+}
+
 func ListenAndServe(addr string) error {
 	server := &http.Server{
 		Addr:    addr,
@@ -42,6 +48,8 @@ func ListenAndServeTLSWithCert(addr string, certBytes []byte, keyBytes []byte) e
 	return server.ListenAndServeTLS("", "")
 }
 
-func RegisterHandler(path string, handler http.HandlerFunc) {
-	gMux.HandleFunc(path, handler)
+func RegisterHandler(path string, handler func(IResponse, IRequest)) {
+	gMux.HandleFunc(path, func(w http.ResponseWriter, r *http.Request) {
+		handler(w, r)
+	})
 }

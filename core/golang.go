@@ -74,7 +74,12 @@ func (p *GolangBuilder) BuildServer() error {
 package %s
 `, BuilderStartTag, BuilderDescription, p.buildConfig.Package)
 
-	imports := []string{}
+	imports := []string{
+		fmt.Sprintf(
+			"\t__system \"%s/__gapi_system__\"",
+			p.output.GoModule,
+		),
+	}
 
 	defines := []string{}
 
@@ -166,12 +171,18 @@ package %s
 		defineContent = strings.Join(defines, "\n")
 	}
 
+	registerContent := fmt.Sprintf(
+		"func init() {\n\t__system.RegisterHandler(\"%s\", func(w __system.IResponse, r __system.IRequest) {\n\n\t})\n}",
+		p.buildConfig.ApiPath,
+	)
+
 	content := fmt.Sprintf(
-		"%s\n%s\n%s\n%s\n//%s",
+		"%s\n%s\n%s\n%s\n%s\n//%s",
 		header,
 		importsContent,
 		defineContent,
 		strings.Join(actions, "\n"),
+		registerContent,
 		BuilderEndTag,
 	)
 
