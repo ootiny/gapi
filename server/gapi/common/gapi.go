@@ -2,6 +2,10 @@
 package common
 
 
+type Geo struct {
+	Latitude float64
+	Longitude float64
+}
 
 
 //tag-gapi-builder-end

@@ -7,6 +7,50 @@ import (
 	"strings"
 )
 
+func toPackageImport(packageName string) string {
+	packageName = strings.ReplaceAll(packageName, "/", "_")
+	return "_" + packageName
+}
+
+func toGolangName(name string) string {
+	// 如果第一个字母是小写， 则把第一个字母大写
+	if name[0] >= 'a' && name[0] <= 'z' {
+		return strings.ToUpper(name[:1]) + name[1:]
+	} else {
+		return name
+	}
+}
+
+func toGolangType(name string) string {
+	name = strings.TrimSpace(name)
+
+	switch name {
+	case "String":
+		return "string"
+	case "Float64":
+		return "float64"
+	case "Int64":
+		return "int64"
+	case "Bool":
+		return "bool"
+	case "Byte":
+		return "byte"
+	case "Bytes":
+		return "[]byte"
+	default:
+		// if name is List<innter>, then return []inner
+		if strings.HasPrefix(name, "List<") && strings.HasSuffix(name, ">") {
+			innerType := name[5 : len(name)-1] // Remove "List<" and ">"
+			return fmt.Sprintf("[]%s", toGolangType(innerType))
+		} else if strings.HasPrefix(name, "Map<") && strings.HasSuffix(name, ">") {
+			innerType := name[4 : len(name)-1] // Remove "Map<" and ">"
+			return fmt.Sprintf("map[string]%s", toGolangType(innerType))
+		} else {
+			return name
+		}
+	}
+}
+
 type GolangBuilder struct {
 	BuildContext
 }
@@ -36,20 +80,54 @@ package %s
 			if len(define.Attributes) > 0 {
 				return fmt.Errorf("%s can not set attributes when imported", name)
 			}
+
+			if p.output.GoModule == "" {
+				return fmt.Errorf("goModule must be set in %s, when use imported define", p.rootConfigPath)
+			}
+
+			imports = append(imports, fmt.Sprintf(
+				"\t%s \"%s/%s\"",
+				toPackageImport(define.Import.Package),
+				p.output.GoModule,
+				define.Import.Package,
+			))
+
+			defines = append(defines, fmt.Sprintf(
+				"type %s = %s.%s\n",
+				name,
+				toPackageImport(define.Import.Package),
+				define.Import.Name,
+			))
+		} else if len(define.Attributes) > 0 {
+			attributes := []string{}
+			for _, attribute := range define.Attributes {
+				attributes = append(attributes, fmt.Sprintf(
+					"\t%s %s",
+					toGolangName(attribute.Name),
+					toGolangType(attribute.Type),
+				))
+			}
+
+			defines = append(defines, fmt.Sprintf(
+				"type %s struct {\n%s\n}\n", name, strings.Join(attributes, "\n")))
 		}
+	}
 
-		defineContent := fmt.Sprintf(`type %s struct {
+	importsContent := ""
+	if len(imports) > 0 {
+		importsContent = fmt.Sprintf("import (\n%s\n)", strings.Join(imports, "\n")) + "\n"
+	}
 
-		}`, name)
-
-		defines = append(defines, defineContent)
+	defineContent := ""
+	if len(defines) > 0 {
+		defineContent = strings.Join(defines, "\n")
 	}
 
 	content := fmt.Sprintf(
 		"%s\n%s\n%s\n%s\n//%s",
 		header,
-		strings.Join(imports, "\n"),
-		strings.Join(defines, "\n"),
+		importsContent,
+		defineContent,
 		strings.Join(actions, "\n"),
 		BuilderEndTag,
 	)

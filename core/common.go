@@ -22,11 +22,11 @@ type IBuilder interface {
 }
 
 type BuildContext struct {
-	rootConfig  GApiRootConfig
-	buildConfig GApiConfig
-	output      GApiRootOutputConfig
-	projectDir  string
-	configPath  string
+	rootConfig      GApiRootConfig
+	buildConfig     GApiConfig
+	output          GApiRootOutputConfig
+	rootConfigPath  string
+	buildConfigPath string
 }
 
 type GApiRootOutputConfig struct {
@@ -200,14 +200,14 @@ func LoadRootConfig() (GApiRootConfig, string, error) {
 }
 
 func Output() error {
-	rootConfig, configPath, err := LoadRootConfig()
+	rootConfig, rootConfigPath, err := LoadRootConfig()
 	if err != nil {
 		log.Panicf("Failed to load config: %v", err)
 	}
 
 	versions := []string{"gapi", "gapi.v1"}
-	projectDir := filepath.Dir(configPath)
-	log.Printf("using config file: %s", configPath)
+	projectDir := filepath.Dir(rootConfigPath)
+	log.Printf("using config file: %s", rootConfigPath)
 	log.Printf("Start build gapi\n")
 	log.Printf("Project Dir: %s\n", projectDir)
 
@@ -228,7 +228,7 @@ func Output() error {
 			if err := UnmarshalConfig(path, &header); err != nil {
 				return nil // Not a gapi config file, just ignore.  continue walking
 			} else if slices.Contains(versions, header.Version) {
-				return OutputFile(rootConfig, projectDir, path) // output file
+				return OutputFile(rootConfig, rootConfigPath, path) // output file
 			} else {
 				return nil
 			}
@@ -244,8 +244,8 @@ func Output() error {
 	return nil
 }
 
-func OutputFile(rootConfig GApiRootConfig, projectAbsDir string, configAbsPath string) error {
-	if buildConfig, err := LoadConfig(configAbsPath); err != nil {
+func OutputFile(rootConfig GApiRootConfig, rootConfigPath string, buildConfigPath string) error {
+	if buildConfig, err := LoadConfig(buildConfigPath); err != nil {
 		return fmt.Errorf("failed to load config file: %w", err)
 	} else {
 		for _, output := range rootConfig.Outputs {
@@ -253,11 +253,11 @@ func OutputFile(rootConfig GApiRootConfig, projectAbsDir string, configAbsPath s
 			var err error
 
 			buildContext := BuildContext{
-				rootConfig:  rootConfig,
-				buildConfig: buildConfig,
-				output:      output,
-				projectDir:  projectAbsDir,
-				configPath:  configAbsPath,
+				output:          output,
+				rootConfig:      rootConfig,
+				buildConfig:     buildConfig,
+				rootConfigPath:  rootConfigPath,
+				buildConfigPath: buildConfigPath,
 			}
 
 			switch output.Language {
