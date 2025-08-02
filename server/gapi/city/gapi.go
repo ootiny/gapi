@@ -13,4 +13,7 @@ type City struct {
 	Description string      `json:"description"`
 }
 
+type FuncGetCity = func(id string) (City, error)
+type HookGetCity = func(fn FuncGetCity) error
+
 //tag-gapi-builder-end

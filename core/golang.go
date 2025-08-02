@@ -37,6 +37,12 @@ func toGolangType(name string) string {
 		return "byte"
 	case "Bytes":
 		return "[]byte"
+	case "Cookies":
+		return "map[string]string"
+	case "Headers":
+		return "map[string]string"
+	case "Error":
+		return "error"
 	default:
 		// if name is List<innter>, then return []inner
 		if strings.HasPrefix(name, "List<") && strings.HasSuffix(name, ">") {
@@ -121,6 +127,34 @@ package %s
 			defines = append(defines, fmt.Sprintf(
 				"type %s struct {\n%s\n}\n", name, strings.Join(attributes, "\n")))
 		}
+	}
+
+	// TODO: create actions
+	for name, action := range p.buildConfig.Actions {
+		parameters := []string{}
+		for _, parameter := range action.Parameters {
+			parameters = append(parameters, fmt.Sprintf(
+				"%s %s",
+				parameter.Name,
+				toGolangType(parameter.Type),
+			))
+		}
+		returns := []string{}
+		for _, ret := range action.Returns {
+			returns = append(returns, toGolangType(ret.Type))
+		}
+
+		actions = append(actions, fmt.Sprintf(
+			"type Func%s = func(%s) (%s)",
+			name,
+			strings.Join(parameters, ", "),
+			strings.Join(returns, ", "),
+		))
+		actions = append(actions, fmt.Sprintf(
+			"type Hook%s = func(fn Func%s) error\n",
+			name,
+			name,
+		))
 	}
 
 	importsContent := ""
