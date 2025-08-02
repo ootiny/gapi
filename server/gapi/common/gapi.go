@@ -3,8 +3,8 @@ package common
 
 
 type Geo struct {
-	Latitude float64
-	Longitude float64
+	Latitude float64`json:"latitude" required:"true"`
+	Longitude float64`json:"longitude" required:"true"`
 }
 
 

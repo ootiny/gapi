@@ -9,7 +9,7 @@ import (
 
 func toPackageImport(packageName string) string {
 	packageName = strings.ReplaceAll(packageName, "/", "_")
-	return "_" + packageName
+	return "__" + packageName
 }
 
 func toGolangName(name string) string {
@@ -101,11 +101,21 @@ package %s
 		} else if len(define.Attributes) > 0 {
 			attributes := []string{}
 			for _, attribute := range define.Attributes {
-				attributes = append(attributes, fmt.Sprintf(
-					"\t%s %s",
-					toGolangName(attribute.Name),
-					toGolangType(attribute.Type),
-				))
+				if attribute.Required {
+					attributes = append(attributes, fmt.Sprintf(
+						"\t%s %s`json:\"%s\" required:\"true\"`",
+						toGolangName(attribute.Name),
+						toGolangType(attribute.Type),
+						attribute.Name,
+					))
+				} else {
+					attributes = append(attributes, fmt.Sprintf(
+						"\t%s %s`json:\"%s\"`",
+						toGolangName(attribute.Name),
+						toGolangType(attribute.Type),
+						attribute.Name,
+					))
+				}
 			}
 
 			defines = append(defines, fmt.Sprintf(

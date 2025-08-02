@@ -2,15 +2,15 @@
 package city
 
 import (
-	_common "github.com/ootiny/gapi/server/gapi/common"
+	__common "github.com/ootiny/gapi/server/gapi/common"
 )
 
-type GeoLocation = _common.Geo
+type GeoLocation = __common.Geo
 
 type City struct {
-	Name string
-	Location GeoLocation
+	Name        string      `json:"name" required:"true"`
+	Location    GeoLocation `json:"location" required:"true"`
+	Description string      `json:"description"`
 }
-
 
 //tag-gapi-builder-end

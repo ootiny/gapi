@@ -24,6 +24,11 @@
           "type": "GeoLocation",
           "required": true,
           "description": "The location of the city"
+        },
+        {
+          "name": "description",
+          "type": "String",
+          "description": "The description of the city"
         }
       ]
     }
