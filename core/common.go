@@ -29,7 +29,6 @@ type GApiRootOutputConfig struct {
 
 type GApiRootConfig struct {
 	Listen       string                 `json:"listen"`
-	Project      string                 `json:"project"`
 	ServerModule string                 `json:"serverModule"`
 	ClientModule string                 `json:"clientModule"`
 	Outputs      []GApiRootOutputConfig `json:"outputs"`
@@ -50,7 +49,7 @@ type GApiDefinitionImportConfig struct {
 type GApiDefinitionConfig struct {
 	Description string                          `json:"description"`
 	Attributes  []GApiDefinitionAttributeConfig `json:"attributes"`
-	Import      GApiDefinitionImportConfig      `json:"import"`
+	Import      *GApiDefinitionImportConfig     `json:"import"`
 }
 
 type GApiActionParameterConfig struct {
@@ -176,33 +175,39 @@ func LoadRootConfig() (GApiRootConfig, string, error) {
 		return GApiRootConfig{}, "", fmt.Errorf("failed to parse config file: %w", err)
 	}
 
-	if !filepath.IsAbs(config.Project) {
-		configDir := filepath.Dir(configPath)
-		config.Project = filepath.Join(configDir, config.Project)
-	}
+	projectDir := filepath.Dir(configPath)
 
 	for i, output := range config.Outputs {
 		var err error
-		config.Outputs[i].Dir, err = ParseProjectDir(output.Dir, config.Project)
+		config.Outputs[i].Dir, err = ParseProjectDir(output.Dir, projectDir)
 		if err != nil {
 			return GApiRootConfig{}, "", fmt.Errorf("failed to parse output dir: %w", err)
 		}
 
 		if !filepath.IsAbs(config.Outputs[i].Dir) {
-			config.Outputs[i].Dir = filepath.Join(config.Project, config.Outputs[i].Dir)
+			config.Outputs[i].Dir = filepath.Join(projectDir, config.Outputs[i].Dir)
 		}
 	}
 
 	return config, configPath, nil
 }
 
-func Output(rootConfig GApiRootConfig) error {
+func Output() error {
+	rootConfig, configPath, err := LoadRootConfig()
+	if err != nil {
+		log.Panicf("Failed to load config: %v", err)
+	}
+
+	projectDir := filepath.Dir(configPath)
+
+	log.Printf("using config file: %s", configPath)
+
 	log.Printf("Start build gapi\n")
-	log.Printf("Project Dir: %s\n", rootConfig.Project)
+	log.Printf("Project Dir: %s\n", projectDir)
 
 	versions := []string{"gapi", "gapi.v1"}
 
-	walkErr := filepath.Walk(rootConfig.Project, func(path string, info os.FileInfo, err error) error {
+	walkErr := filepath.Walk(projectDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}

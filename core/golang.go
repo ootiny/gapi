@@ -33,6 +33,19 @@ package %s
 
 	actions := []string{}
 
+	for name, define := range p.buildConfig.Definitions {
+		if define.Import != nil {
+			if len(define.Attributes) > 0 {
+				return fmt.Errorf("%s can not set attributes when imported", name)
+			}
+
+		}
+
+		// defineContent := fmt.Sprintf(`type %s struct {
+
+		// }`, define.Name)
+	}
+
 	content := fmt.Sprintf(
 		"%s\n%s\n%s\n%s\n//%s",
 		header,
