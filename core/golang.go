@@ -36,12 +36,13 @@ package %s
 			if len(define.Attributes) > 0 {
 				return fmt.Errorf("%s can not set attributes when imported", name)
 			}
-
 		}
 
-		// defineContent := fmt.Sprintf(`type %s struct {
+		defineContent := fmt.Sprintf(`type %s struct {
 
-		// }`, define.Name)
+		}`, name)
+
+		defines = append(defines, defineContent)
 	}
 
 	content := fmt.Sprintf(

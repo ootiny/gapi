@@ -6,7 +6,7 @@
   "definitions": {
     "GeoLocation": {
       "import": {
-        "from": "./root",
+        "package": "common",
         "name": "Geo"
       }
     },

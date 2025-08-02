@@ -49,8 +49,8 @@ type GApiDefinitionAttributeConfig struct {
 }
 
 type GApiDefinitionImportConfig struct {
-	From string `json:"from"`
-	Name string `json:"name"`
+	Package string `json:"package"`
+	Name    string `json:"name"`
 }
 
 type GApiDefinitionConfig struct {
