@@ -137,6 +137,6 @@ func ListenAndServeTLSWithCert(addr string, certBytes []byte, keyBytes []byte) e
 	return server.ListenAndServeTLS("", "")
 }
 
-func RegisterHandler(action string, handler func(ctx *Context)) {
+func RegisterHandler(action string, handler func(ctx *Context) Return) {
 	gMap[action] = handler
 }
