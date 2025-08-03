@@ -20,8 +20,8 @@ type Return struct {
 }
 
 type Context struct {
-	action string // action
-	data   []byte // data
+	action string
+	data   []byte
 	w      http.ResponseWriter
 	r      *http.Request
 }
@@ -53,10 +53,9 @@ func (p *Context) WriteJson(data []byte) (int, error) {
 
 func gapi(w http.ResponseWriter, r *http.Request) {
 	action := r.URL.Query().Get("a")
-
 	ret := Return{}
-
 	fn, ok := gMap[action]
+
 	if !ok {
 		ret = Return{
 			Code:    GApiErrorActionNotFound,
